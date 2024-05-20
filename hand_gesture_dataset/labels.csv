@@ -1,2 +1,1 @@
-hand_gesture_dataset/hola_0.png,hola
-hand_gesture_dataset/sup_0.png,sup
+photo_path,gesture_label,hand_type,keypoints

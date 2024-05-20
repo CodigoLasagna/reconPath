@@ -20,7 +20,7 @@ class HandGestureDetector:
         if not os.path.exists(self.csv_path):
             with open(self.csv_path, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
-                writer.writerow(['photo_path', 'gesture_label', 'hand_type', 'keypoints', 'visible_keypoints'])
+                writer.writerow(['photo_path', 'gesture_label', 'hand_type', 'keypoints'])
 
     def detect_gestures(self):
         cap = cv2.VideoCapture(0)
