@@ -1,6 +1,5 @@
 import cv2
 import mediapipe as mp
-import numpy as np
 import os
 import time
 import csv
@@ -37,17 +36,6 @@ class HandGestureDetector:
             if results.multi_hand_landmarks:
                 for hand_landmarks, handedness in zip(results.multi_hand_landmarks, results.multi_handedness):
                     self.mp_drawing.draw_landmarks(frame, hand_landmarks, self.mp_hands.HAND_CONNECTIONS)
-
-                    landmarks = hand_landmarks.landmark
-                    thumb_tip = landmarks[self.mp_hands.HandLandmark.THUMB_TIP]
-                    index_finger_tip = landmarks[self.mp_hands.HandLandmark.INDEX_FINGER_TIP]
-
-                    thumb_index_distance = np.linalg.norm(
-                        np.array([thumb_tip.x, thumb_tip.y]) - np.array([index_finger_tip.x, index_finger_tip.y])
-                    )
-
-                    if thumb_index_distance < 0.05:
-                        cv2.putText(frame, 'Gesto: OK', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
 
             cv2.imshow('Hand Gesture Recognition', frame)
 
