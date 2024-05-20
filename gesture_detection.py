@@ -48,16 +48,26 @@ class HandGestureDetector:
                         prediction = self.classifier.knn_model.predict([features])
             
                         # Dibujar texto del gesto
-                        cv2.putText(frame, f'Gesture: {prediction}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (230, 0, 77), 2, cv2.LINE_AA)
+                        cv2.putText(frame, f'Gesto: {prediction}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (230, 0, 77), 2, cv2.LINE_AA)
 
             cv2.imshow('Hand Gesture Recognition', frame)
-            if cv2.waitKey(1) & 0xFF == 27:
+            key = cv2.waitKey(1)
+            if (key == ord('p')):
+                self._save_snapshot(frame, self.auto_word, results)
+            if (key == ord('c')):
+                self._timed_capture(cap)
+            if key & 0xFF == 27:
                 break
 
         cap.release()
         cv2.destroyAllWindows()
 
     def _save_snapshot(self, frame, gesture_label, results):
+        if (self.auto_word == ''):
+            gesture_label = input("Introduce la etiqueta para este gesto: ")
+        else:
+            gesture_label = self.auto_word
+            
         photo_path = os.path.join(self.dataset_path, f"{gesture_label}_{self.photo_counter}.png")
         cv2.imwrite(photo_path, frame)
         print(f"Foto guardada: {photo_path}")
@@ -74,7 +84,10 @@ class HandGestureDetector:
                 writer.writerow([photo_path, gesture_label, hand_type, keypoints, visible_keypoints])
 
     def _timed_capture(self, cap):
-        gesture_label = input("Introduce la etiqueta para este gesto: ")
+        if (self.auto_word == ''):
+            gesture_label = input("Introduce la etiqueta para este gesto: ")
+        else:
+            gesture_label = self.auto_word
         start_time = time.time()
         end_time = start_time + 10
 
