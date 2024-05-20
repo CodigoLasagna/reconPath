@@ -6,7 +6,7 @@ import time
 import csv
 
 class HandGestureDetector:
-    def __init__(self, max_num_hands=2, min_detection_confidence=0.9):
+    def __init__(self, max_num_hands=2, min_detection_confidence=0.9, auto_word=''):
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands(max_num_hands=max_num_hands, min_detection_confidence=min_detection_confidence)
         self.mp_drawing = mp.solutions.drawing_utils
@@ -14,13 +14,14 @@ class HandGestureDetector:
         os.makedirs(self.dataset_path, exist_ok=True)
         self.csv_path = os.path.join(self.dataset_path, "labels.csv")
         self.photo_counter = 0
+        self.auto_word = auto_word
         self._initialize_csv()
 
     def _initialize_csv(self):
         if not os.path.exists(self.csv_path):
             with open(self.csv_path, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
-                writer.writerow(['photo_path', 'gesture_label', 'hand_type', 'keypoints'])
+                writer.writerow(['photo_path', 'gesture_label', 'hand_type', 'keypoints', 'no_v'])
 
     def detect_gestures(self):
         cap = cv2.VideoCapture(0)
@@ -54,7 +55,10 @@ class HandGestureDetector:
             if key & 0xFF == 27:
                 break
             elif key & 0xFF == ord('p'):
-                gesture_label = input("Introduce la etiqueta para este gesto: ")
+                if (self.auto_word == ''):
+                    gesture_label = input("Introduce la etiqueta para este gesto: ")
+                else:
+                    gesture_label = self.auto_word
                 self._save_snapshot(frame, gesture_label, results)
             elif key & 0xFF == ord('c'):
                 self._timed_capture(cap)
