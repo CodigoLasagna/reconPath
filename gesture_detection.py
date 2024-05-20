@@ -5,8 +5,9 @@ import time
 import csv
 
 class HandGestureDetector:
-    def __init__(self, max_num_hands=2, min_detection_confidence=0.9, auto_word=''):
+    def __init__(self, max_num_hands=2, min_detection_confidence=0.9, auto_word='', classifier=None):
         self.mp_hands = mp.solutions.hands
+        self.classifier = classifier
         self.hands = self.mp_hands.Hands(max_num_hands=max_num_hands, min_detection_confidence=min_detection_confidence)
         self.mp_drawing = mp.solutions.drawing_utils
         self.dataset_path = "hand_gesture_dataset"
@@ -35,21 +36,23 @@ class HandGestureDetector:
 
             if results.multi_hand_landmarks:
                 for hand_landmarks, handedness in zip(results.multi_hand_landmarks, results.multi_handedness):
+                    hand_type = handedness.classification[0].label  # 'Left' o 'Right'
+                    keypoints = [(lm.x, lm.y, lm.z) for lm in hand_landmarks.landmark]
+                    
+                    # Dibujar landmarks utilizando Mediapipe
                     self.mp_drawing.draw_landmarks(frame, hand_landmarks, self.mp_hands.HAND_CONNECTIONS)
+                    
+                    # Clasificar gesto utilizando el modelo cargado
+                    if(self.classifier):
+                        features = self.classifier.extract_features({'keypoints': keypoints, 'hand_type': hand_type})
+                        prediction = self.classifier.knn_model.predict([features])
+            
+                        # Dibujar texto del gesto
+                        cv2.putText(frame, f'Gesture: {prediction}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (230, 0, 77), 2, cv2.LINE_AA)
 
             cv2.imshow('Hand Gesture Recognition', frame)
-
-            key = cv2.waitKey(1)
-            if key & 0xFF == 27:
+            if cv2.waitKey(1) & 0xFF == 27:
                 break
-            elif key & 0xFF == ord('p'):
-                if (self.auto_word == ''):
-                    gesture_label = input("Introduce la etiqueta para este gesto: ")
-                else:
-                    gesture_label = self.auto_word
-                self._save_snapshot(frame, gesture_label, results)
-            elif key & 0xFF == ord('c'):
-                self._timed_capture(cap)
 
         cap.release()
         cv2.destroyAllWindows()

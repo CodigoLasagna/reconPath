@@ -4,12 +4,14 @@ from ast import literal_eval
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report, confusion_matrix
+import joblib
 
 class HandGestureClassifier:
-    def __init__(self, dataset_path):
+    def __init__(self, dataset_path, model_path):
         self.dataset_path = dataset_path
         self.df = pd.read_csv(dataset_path)
         self.df['keypoints'] = self.df['keypoints'].apply(literal_eval)
+        self.knn_model = joblib.load(model_path)
         
     def extract_features(self, row):
         keypoints = row['keypoints']
@@ -41,9 +43,6 @@ class HandGestureClassifier:
         
         print("\nConfusion Matrix:")
         print(confusion_matrix(self.y_test, y_pred))
-
-## Uso del clasificador
-#if __name__ == "__main__":
-#    classifier = HandGestureClassifier('hand_gesture_dataset/labels.csv')
-#    classifier.train()
-#    classifier.evaluate()
+        
+    def save_model(self, model_path):
+        joblib.dump(self.knn_model, model_path)
