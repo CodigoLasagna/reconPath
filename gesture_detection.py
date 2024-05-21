@@ -58,6 +58,8 @@ class HandGestureDetector:
                 self._timed_capture(cap)
             if (key == ord('t')):
                 self._train_model()
+            if (key == ord('i')):
+                self._change_output_word()
             if key & 0xFF == 27 or key == ord('q'):
                 break
 
@@ -89,6 +91,9 @@ class HandGestureDetector:
         self.classifier.train()
         self.classifier.evaluate()
         self.classifier.save_model()
+
+    def _change_output_word(self):
+        self.auto_word = input("Introduzca el nombre para la etiqueta del gesto: ")
 
     def _timed_capture(self, cap):
         if (self.auto_word == ''):
