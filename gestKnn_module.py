@@ -42,7 +42,7 @@ class HandGestureClassifierKnn:
     def evaluate(self):
         y_pred = self.knn_model.predict(self.X_test)
         
-        print("Classification Report:")
+        print("Reporte de clasificacion:")
         print(classification_report(self.y_test, y_pred))
         report = classification_report(self.y_test, y_pred, output_dict=True)
         report_df = pd.DataFrame(report).transpose()
@@ -52,7 +52,7 @@ class HandGestureClassifierKnn:
         plt.title('Reporte de clasificación')
         plt.show()
         
-        print("\nConfusion Matrix:")
+        print("\nMatriz de confusion:")
         cm = confusion_matrix(self.y_test, y_pred)
         print(cm)
         
