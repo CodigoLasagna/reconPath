@@ -56,7 +56,9 @@ class HandGestureDetector:
                 self._save_snapshot(frame, self.auto_word, results)
             if (key == ord('c')):
                 self._timed_capture(cap)
-            if key & 0xFF == 27:
+            if (key == ord('t')):
+                self._train_model()
+            if key & 0xFF == 27 or key == ord('q'):
                 break
 
         cap.release()
@@ -82,6 +84,11 @@ class HandGestureDetector:
                 keypoints = [(lm.x, lm.y, lm.z) for lm in hand_landmarks.landmark]
                 visible_keypoints = [i for i, lm in enumerate(hand_landmarks.landmark) if lm.visibility > 0.5]
                 writer.writerow([photo_path, gesture_label, hand_type, keypoints, visible_keypoints])
+
+    def _train_model(self):
+        self.classifier.train()
+        self.classifier.evaluate()
+        self.classifier.save_model()
 
     def _timed_capture(self, cap):
         if (self.auto_word == ''):

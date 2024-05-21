@@ -6,12 +6,16 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 import joblib
 
-class HandGestureClassifier:
-    def __init__(self, dataset_path, model_path):
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+class HandGestureClassifierKnn:
+    def __init__(self, dataset_path, model_path_to_use, model_path_to_train):
         self.dataset_path = dataset_path
+        self.model_to_save = model_path_to_train
         self.df = pd.read_csv(dataset_path)
         self.df['keypoints'] = self.df['keypoints'].apply(literal_eval)
-        self.knn_model = joblib.load(model_path)
+        self.knn_model = joblib.load(model_path_to_use)
         
     def extract_features(self, row):
         keypoints = row['keypoints']
@@ -40,9 +44,26 @@ class HandGestureClassifier:
         
         print("Classification Report:")
         print(classification_report(self.y_test, y_pred))
+        report = classification_report(self.y_test, y_pred, output_dict=True)
+        report_df = pd.DataFrame(report).transpose()
+        
+        plt.figure(figsize=(10, 7))
+        sns.heatmap(report_df.iloc[:-1, :-1], annot=True, cmap='Blues')
+        plt.title('Reporte de clasificación')
+        plt.show()
         
         print("\nConfusion Matrix:")
-        print(confusion_matrix(self.y_test, y_pred))
+        cm = confusion_matrix(self.y_test, y_pred)
+        print(cm)
         
-    def save_model(self, model_path):
-        joblib.dump(self.knn_model, model_path)
+        gesture_labels = sorted(self.df['gesture_label'].unique())
+        
+        plt.figure(figsize=(10, 7))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=gesture_labels, yticklabels=gesture_labels)
+        plt.xlabel('Predicho')
+        plt.ylabel('Verdadero')
+        plt.title('Matriz de confusión')
+        plt.show()
+        
+    def save_model(self):
+        joblib.dump(self.knn_model, self.model_to_save)
