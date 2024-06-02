@@ -33,7 +33,7 @@ class HandGestureApp(tk.CTkFrame):
 
     def create_widgets(self):
         main_frame = tk.CTkFrame(self)
-        main_frame.pack(expand=True, pady=50, padx=20)
+        main_frame.pack(expand=True, pady=10, padx=10)
 
         up_frame = tk.CTkFrame(main_frame)
         up_frame.pack(side="top", pady=5)
