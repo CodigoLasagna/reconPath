@@ -32,11 +32,14 @@ class HandGestureApp(tk.CTkFrame):
         self.detector = HandGestureDetector(classifier=self.classifier, cap=self.cap, app=self)
 
     def create_widgets(self):
-        up_frame = tk.CTkFrame(self)
-        up_frame.pack(side="top", pady=10)
+        main_frame = tk.CTkFrame(self)
+        main_frame.pack(expand=True, pady=50, padx=20)
+
+        up_frame = tk.CTkFrame(main_frame)
+        up_frame.pack(side="top", pady=5)
         
         self.video_label = tk.CTkLabel(up_frame)
-        self.video_label.pack(side="left", pady=10)
+        self.video_label.pack(side="left", pady=5, padx=5)
         self.video_label.configure(text='')
 
         button_frame = tk.CTkFrame(up_frame)
@@ -63,8 +66,8 @@ class HandGestureApp(tk.CTkFrame):
         self.input_word_btn = tk.CTkButton(button_frame, text="Establecer etiqueta", command=self.update_current_train_label)
         self.input_word_btn.pack(pady=5)
 
-        images_frame = tk.CTkFrame(self)
-        images_frame.pack(side="top", pady=20)
+        images_frame = tk.CTkFrame(main_frame)
+        images_frame.pack(side="top", pady=5, padx=20)
 
         self.image_label1 = tk.CTkLabel(images_frame)
         self.image_label1.pack(side="left", padx=10, pady=10)
@@ -88,12 +91,12 @@ class HandGestureApp(tk.CTkFrame):
 
         img1 = Image.open(conf_matrix_path)
         img1 = img1.resize((700, 490))
-        self.imgtk1 = ImageTk.PhotoImage(image=img1)
+        self.imgtk1 = ImageTk.PhotoImage(img1)
         self.image_label1.configure(image=self.imgtk1)
 
         img2 = Image.open(clas_rep_path)
         img2 = img2.resize((933, 490))
-        self.imgtk2 = ImageTk.PhotoImage(image=img2)
+        self.imgtk2 = ImageTk.PhotoImage(img2)
         self.image_label2.configure(image=self.imgtk2)
 
     def update_current_train_label(self):
@@ -128,6 +131,6 @@ if __name__ == "__main__":
     
     cap = cv2.VideoCapture(0)
     app = HandGestureApp(master=root, cap=cap)
-    app.pack()
+    app.pack(expand=True, fill="both")
 
     root.mainloop()
