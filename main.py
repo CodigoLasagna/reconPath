@@ -1,6 +1,7 @@
 import customtkinter as tk
 from PIL import Image, ImageTk
 import cv2
+import threading
 from gesture_detection import HandGestureDetector
 from gestKnn_module import HandGestureClassifierKnn
 import warnings
@@ -18,6 +19,10 @@ class HandGestureApp(tk.CTkFrame):
 
         self.initialize_detector()
         self.create_widgets()
+
+        # Start the camera thread
+        self.camera_thread = threading.Thread(target=self.start_camera_thread, daemon=True)
+        self.camera_thread.start()
 
     def initialize_detector(self):
         dataset_path = 'hand_gesture_dataset/labels.csv'
@@ -70,7 +75,7 @@ class HandGestureApp(tk.CTkFrame):
         self.image_label2.configure(text='')
 
         self.load_images()
-    
+
     def call_train_model(self):
         self.detector._train_model()
         self.load_images()
@@ -78,9 +83,7 @@ class HandGestureApp(tk.CTkFrame):
     def load_images(self):
         conf_matrix_path = "figures/conf_mat.png"
         clas_rep_path = "figures/clas_rep.png"
-        if os.path.isfile(conf_matrix_path) == False:
-            return
-        if os.path.isfile(clas_rep_path) == False:
+        if not os.path.isfile(conf_matrix_path) or not os.path.isfile(clas_rep_path):
             return
 
         img1 = Image.open(conf_matrix_path)
@@ -104,7 +107,7 @@ class HandGestureApp(tk.CTkFrame):
         self.video_label.configure(image=imgtk)
 
     def start_camera_thread(self):
-        def camera_loop():
+        while True:
             ret, frame = self.cap.read()
             if ret:
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -112,9 +115,7 @@ class HandGestureApp(tk.CTkFrame):
                 img = Image.fromarray(frame_rgb)
                 imgtk = ImageTk.PhotoImage(image=img)
                 self.update_video_label(imgtk)
-            self.after(10, camera_loop)
-    
-        camera_loop()
+            self.master.update()
 
 def initialize_classifier(dataset_path, model_path_to_use, model_path_to_train):
     classifier = HandGestureClassifierKnn(dataset_path, model_path_to_use, model_path_to_train)
@@ -128,7 +129,5 @@ if __name__ == "__main__":
     cap = cv2.VideoCapture(0)
     app = HandGestureApp(master=root, cap=cap)
     app.pack()
-
-    app.start_camera_thread()
 
     root.mainloop()
