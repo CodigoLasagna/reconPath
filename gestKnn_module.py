@@ -71,28 +71,71 @@ class HandGestureClassifierKnn:
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=18)
 
-        self.knn_model = KNeighborsClassifier(n_neighbors=3)
+        self.knn_model = KNeighborsClassifier(n_neighbors=13)
         self.knn_model.fit(self.X_train, self.y_train)
 
     def evaluate(self):
         if self.knn_model is None:
             print("No hay modelo entrenado para evaluar.")
             return
-
+    
         y_pred = self.knn_model.predict(self.X_test)
         cm = confusion_matrix(self.y_test, y_pred)
-        cr = classification_report(self.y_test, y_pred)
+        cr = classification_report(self.y_test, y_pred, output_dict=True)
+        
+        # Mostrar reporte de clasificación
+        #print(classification_report(self.y_test, y_pred))
+    
+        # Preparar datos para el gráfico de barras
+        metrics = cr.keys()
+        precision = [cr[label]['precision'] for label in metrics if label != 'accuracy']
+        recall = [cr[label]['recall'] for label in metrics if label != 'accuracy']
+        f1score = [cr[label]['f1-score'] for label in metrics if label != 'accuracy']
+        categories = [label for label in metrics if label != 'accuracy']
+    
+        # Configurar el gráfico de barras
+        plt.figure(figsize=(10, 5), facecolor='#293942')  # Ajuste el color de fondo de la figura
+        barWidth = 0.25
+        ax = plt.axes()
+        ax.set_facecolor('#1B232B')
+        r1 = np.arange(len(categories))
+        r2 = [x + barWidth for x in r1]
+        r3 = [x + barWidth for x in r2]
+        
+        # Usar los colores de la paleta YlGnBu para las barras
+        palette = sns.color_palette('YlGnBu', len(categories))
+        
+        plt.bar(r1, precision, color=palette[0], width=barWidth, label='Precision')
+        plt.bar(r2, recall, color=palette[1], width=barWidth, label='Recall')
+        plt.bar(r3, f1score, color=palette[2], width=barWidth, label='F1-score')
+        
+        plt.xlabel('Metrics', fontweight='bold', color='white')
+        plt.ylabel('Score', color='white')  # Agregar etiqueta para el eje Y
+        plt.xticks([r + barWidth for r in range(len(categories))], categories, color='white')
+        plt.yticks(color='white')  # Ajustar color de los números en el eje Y
+        plt.title('Classification Report Metrics', color='white')
+        plt.legend()
+        
+        plt.savefig('figures/clas_rep.png')
+        #plt.show()
         
         # Mostrar matriz de confusión
-        plt.figure(figsize=(10, 7))
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=np.unique(self.y_test), yticklabels=np.unique(self.y_test))
-        plt.xlabel('Predicted')
-        plt.ylabel('True')
-        plt.title('Confusion Matrix')
-        plt.show()
+        plt.figure(figsize=(10, 7), facecolor='#293942')
+        heatmap = sns.heatmap(cm, annot=True, fmt='d', cmap='YlGnBu', xticklabels=np.unique(self.y_test), yticklabels=np.unique(self.y_test))
+        heatmap.set_yticklabels(heatmap.get_yticklabels(), color='white')
+        heatmap.set_xticklabels(heatmap.get_xticklabels(), color='white')
 
-        # Mostrar reporte de clasificación
-        print(cr)
+        cbar = heatmap.collections[0].colorbar
+        cbar.set_label('Colorbar Label', color='white')
+        cbar.ax.yaxis.set_tick_params(color='white')
+        cbar.ax.yaxis.set_ticklabels(cbar.ax.yaxis.get_ticklabels(), color='white')
+
+        plt.xlabel('Predicted', color='white')
+        plt.ylabel('True', color='white')
+        plt.title('Confusion Matrix', color='white')
+        plt.savefig('figures/conf_mat.png')
+        #plt.show()
+
 
     def save_model(self):
         if self.knn_model is None:
