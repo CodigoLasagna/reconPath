@@ -36,11 +36,11 @@ class HandGestureApp(tk.CTkFrame):
         up_frame.pack(side="top", pady=10)
         
         self.video_label = tk.CTkLabel(up_frame)
-        self.video_label.pack(side="left", pady=10, padx=10)
+        self.video_label.pack(side="left", pady=10)
         self.video_label.configure(text='')
 
         button_frame = tk.CTkFrame(up_frame)
-        button_frame.pack(side="right", padx=20)
+        button_frame.pack(side="right", padx=10)
 
         self.quit_button = tk.CTkButton(button_frame, text="Salir", command=self.master.destroy)
         self.quit_button.pack(pady=5)
@@ -87,12 +87,12 @@ class HandGestureApp(tk.CTkFrame):
             return
 
         img1 = Image.open(conf_matrix_path)
-        img1 = img1.resize((600, 420))
+        img1 = img1.resize((700, 490))
         self.imgtk1 = ImageTk.PhotoImage(image=img1)
         self.image_label1.configure(image=self.imgtk1)
 
         img2 = Image.open(clas_rep_path)
-        img2 = img2.resize((800, 420))
+        img2 = img2.resize((933, 490))
         self.imgtk2 = ImageTk.PhotoImage(image=img2)
         self.image_label2.configure(image=self.imgtk2)
 
@@ -124,7 +124,7 @@ def initialize_classifier(dataset_path, model_path_to_use, model_path_to_train):
 if __name__ == "__main__":
     root = tk.CTk()
     root.configure()
-    root.title("Hand Gesture Recognition App")
+    root.title("Recon Path")
     
     cap = cv2.VideoCapture(0)
     app = HandGestureApp(master=root, cap=cap)

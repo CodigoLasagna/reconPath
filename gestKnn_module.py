@@ -109,11 +109,11 @@ class HandGestureClassifierKnn:
         plt.bar(r2, recall, color=palette[1], width=barWidth, label='Recall')
         plt.bar(r3, f1score, color=palette[2], width=barWidth, label='F1-score')
         
-        plt.xlabel('Metrics', fontweight='bold', color='white')
+        plt.xlabel('Metricas', fontweight='bold', color='white')
         plt.ylabel('Score', color='white')  # Agregar etiqueta para el eje Y
         plt.xticks([r + barWidth for r in range(len(categories))], categories, color='white')
         plt.yticks(color='white')  # Ajustar color de los números en el eje Y
-        plt.title('Classification Report Metrics', color='white')
+        plt.title('Reporte de clasificación', color='white')
         plt.legend()
         
         plt.savefig('figures/clas_rep.png')
@@ -130,9 +130,9 @@ class HandGestureClassifierKnn:
         cbar.ax.yaxis.set_tick_params(color='white')
         cbar.ax.yaxis.set_ticklabels(cbar.ax.yaxis.get_ticklabels(), color='white')
 
-        plt.xlabel('Predicted', color='white')
-        plt.ylabel('True', color='white')
-        plt.title('Confusion Matrix', color='white')
+        plt.xlabel('Predicho', color='white')
+        plt.ylabel('Verdadero', color='white')
+        plt.title('Matriz de confusión', color='white')
         plt.savefig('figures/conf_mat.png')
         #plt.show()
 
