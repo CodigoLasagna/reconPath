@@ -1,4 +1,4 @@
-import tkinter as tk
+import customtkinter as tk
 from PIL import Image, ImageTk
 import cv2
 from gesture_detection import HandGestureDetector
@@ -7,10 +7,11 @@ import warnings
 import os
 
 warnings.filterwarnings("ignore", category=UserWarning)
+tk.set_appearance_mode("dark")
 
-class HandGestureApp(tk.Frame):
+class HandGestureApp(tk.CTkFrame):
     def __init__(self, master=None, cap=None):
-        super().__init__(master, bg='#1B232B')
+        super().__init__(master)
         self.master = master
         self.pack()
         self.cap = cap
@@ -26,44 +27,47 @@ class HandGestureApp(tk.Frame):
         self.detector = HandGestureDetector(classifier=self.classifier, cap=self.cap, app=self)
 
     def create_widgets(self):
-        up_frame = tk.Frame(self, bg='#1B232B')
+        up_frame = tk.CTkFrame(self)
         up_frame.pack(side="top", pady=10)
         
-        self.video_label = tk.Label(up_frame, borderwidth=2, relief="solid", bg='#FFFFFF')
+        self.video_label = tk.CTkLabel(up_frame)
         self.video_label.pack(side="left", pady=10, padx=10)
+        self.video_label.configure(text='')
 
-        button_frame = tk.Frame(up_frame, bg='#1B232B')
+        button_frame = tk.CTkFrame(up_frame)
         button_frame.pack(side="right", padx=20)
 
-        self.quit_button = tk.Button(button_frame, text="Salir", command=self.master.destroy, bg='#4CAF50', fg='#FFFFFF')
+        self.quit_button = tk.CTkButton(button_frame, text="Salir", command=self.master.destroy)
         self.quit_button.pack(padx=10, pady=5)
 
-        self.take_pic_button = tk.Button(button_frame, text="Tomar foto", command=self.detector._save_snapshot, bg='#4CAF50', fg='#FFFFFF')
+        self.take_pic_button = tk.CTkButton(button_frame, text="Tomar foto", command=self.detector._save_snapshot)
         self.take_pic_button.pack(padx=10, pady=5)
 
-        self.take_pic_temp_button = tk.Button(button_frame, text="Tomar foto (cronometrado)", command=self.detector._timed_capture, bg='#4CAF50', fg='#FFFFFF')
+        self.take_pic_temp_button = tk.CTkButton(button_frame, text="Tomar foto (cronometrado)", command=self.detector._timed_capture)
         self.take_pic_temp_button.pack(padx=10, pady=5)
 
-        self.train_button = tk.Button(button_frame, text="Entrenar modelo", command=self.call_train_model, bg='#4CAF50', fg='#FFFFFF')
+        self.train_button = tk.CTkButton(button_frame, text="Entrenar modelo", command=self.call_train_model)
         self.train_button.pack(padx=10, pady=5)
 
-        self.current_word_lbl = tk.Label(button_frame, text=self.detector.auto_word, bg='#1B232B', fg='#FFFFFF')
+        self.current_word_lbl = tk.CTkLabel(button_frame, text=self.detector.auto_word)
         self.current_word_lbl.pack()
 
-        self.input_text = tk.Text(button_frame, height=5, width=20)
+        self.input_text = tk.CTkTextbox(button_frame, height=5, width=90)
         self.input_text.pack()
 
-        self.input_word_btn = tk.Button(button_frame, text="Establecer etiqueta", command=self.update_current_train_label, bg='#4CAF50', fg='#FFFFFF')
+        self.input_word_btn = tk.CTkButton(button_frame, text="Establecer etiqueta", command=self.update_current_train_label)
         self.input_word_btn.pack(padx=10, pady=5)
 
-        images_frame = tk.Frame(self, bg='#1B232B')
+        images_frame = tk.CTkFrame(self)
         images_frame.pack(side="top", pady=20)
 
-        self.image_label1 = tk.Label(images_frame, borderwidth=2, relief="solid", bg='#FFFFFF')
-        self.image_label1.pack(side="top", padx=10, pady=10)
+        self.image_label1 = tk.CTkLabel(images_frame)
+        self.image_label1.pack(side="left", padx=10, pady=10)
+        self.image_label1.configure(text='')
 
-        self.image_label2 = tk.Label(images_frame, borderwidth=2, relief="solid", bg='#FFFFFF')
-        self.image_label2.pack(side="bottom", padx=10, pady=10)
+        self.image_label2 = tk.CTkLabel(images_frame)
+        self.image_label2.pack(side="right", padx=10, pady=10)
+        self.image_label2.configure(text='')
 
         self.load_images()
     
@@ -80,24 +84,24 @@ class HandGestureApp(tk.Frame):
             return
 
         img1 = Image.open(conf_matrix_path)
-        imgtk1 = ImageTk.PhotoImage(image=img1)
+        img1 = img1.resize((600, 420))
+        self.imgtk1 = ImageTk.PhotoImage(image=img1)
+        self.image_label1.configure(image=self.imgtk1)
 
         img2 = Image.open(clas_rep_path)
-        imgtk2 = ImageTk.PhotoImage(image=img2)
-
-        self.image_label1.imgtk = imgtk1
-        self.image_label1.config(image=imgtk1)
-        self.image_label2.imgtk = imgtk2
-        self.image_label2.config(image=imgtk2)
+        img2 = img2.resize((800, 420))
+        self.imgtk2 = ImageTk.PhotoImage(image=img2)
+        self.image_label2.configure(image=self.imgtk2)
+        print(self.image_label1.winfo_reqwidth())
 
     def update_current_train_label(self):
         self.detector.auto_word = self.input_text.get(1.0, 'end-1c')
         self.detector.photo_counter = 0
-        self.current_word_lbl.config(text=self.detector.auto_word)
+        self.current_word_lbl.configure(text=self.detector.auto_word)
 
     def update_video_label(self, imgtk):
         self.video_label.imgtk = imgtk
-        self.video_label.config(image=imgtk)
+        self.video_label.configure(image=imgtk)
 
     def start_camera_thread(self):
         def camera_loop():
@@ -117,8 +121,8 @@ def initialize_classifier(dataset_path, model_path_to_use, model_path_to_train):
     return classifier
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    root.configure(bg='#1B232B')
+    root = tk.CTk()
+    root.configure()
     root.title("Hand Gesture Recognition App")
     
     cap = cv2.VideoCapture(0)
