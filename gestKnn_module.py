@@ -13,20 +13,27 @@ class HandGestureClassifierKnn:
     def __init__(self, dataset_path, model_path_to_use, model_path_to_train):
         self.dataset_path = dataset_path
         self.model_to_save = model_path_to_train
+        self.model_path_to_use = model_path_to_use
 
-        if os.path.isfile(dataset_path):
-            self.df = pd.read_csv(dataset_path)
+        self.load_cvs_data()
+
+        if os.path.isfile(self.model_path_to_use):
+            self.load_model()
+        else:
+            self.knn_model = None
+            print("No se encontró el modelo. Es necesario entrenarlo.")
+    def load_model(self):
+        self.knn_model = joblib.load(self.model_path_to_use)
+
+    def load_cvs_data(self):
+        if os.path.isfile(self.dataset_path):
+            self.df = pd.read_csv(self.dataset_path)
             self.df['keypoints_left'] = self.df['keypoints_left'].apply(literal_eval)
             self.df['keypoints_right'] = self.df['keypoints_right'].apply(literal_eval)
         else:
             self.df = None
             print("No se encontró la base de datos. No se podrá entrenar el modelo.")
-
-        if os.path.isfile(model_path_to_use):
-            self.knn_model = joblib.load(model_path_to_use)
-        else:
-            self.knn_model = None
-            print("No se encontró el modelo. Es necesario entrenarlo.")
+            
 
     def extract_combined_features(self, keypoints_combined):
         features = []
@@ -62,7 +69,7 @@ class HandGestureClassifierKnn:
         X = np.array(self.df['features'].tolist())
         y = self.df['gesture_label']
 
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.2, random_state=18)
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X, y, test_size=0.3, random_state=18)
 
         self.knn_model = KNeighborsClassifier(n_neighbors=3)
         self.knn_model.fit(self.X_train, self.y_train)

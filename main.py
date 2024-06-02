@@ -22,11 +22,37 @@ class HandGestureApp(tk.Frame):
         self.detector = HandGestureDetector(classifier=self.classifier, cap=self.cap, app=self)
 
     def create_widgets(self):
-        self.video_label = tk.Label(self)
-        self.video_label.pack()
+        self.video_label = tk.Label(self, borderwidth=2, relief="solid")
+        self.video_label.pack(side="left", pady=10)  # Adjust padx and pady as needed
 
-        self.quit_button = tk.Button(self, text="Salir", command=self.master.destroy)
-        self.quit_button.pack()
+        # Create a frame for the buttons
+        button_frame = tk.Frame(self)
+        button_frame.pack(side="right", padx=200)
+
+        self.quit_button = tk.Button(button_frame, text="Salir", command=self.master.destroy)
+        self.quit_button.pack(padx=10, pady=5)
+
+        self.take_pic_button = tk.Button(button_frame, text="Tomar foto", command=self.detector._save_snapshot)
+        self.take_pic_button.pack(padx=10, pady=5)
+
+        self.take_pic_temp_button = tk.Button(button_frame, text="Tomar foto (cronometrado)", command=self.detector._timed_capture)
+        self.take_pic_temp_button.pack(padx=10, pady=5)
+
+        self.train_button = tk.Button(button_frame, text="Entrenar modelo", command=self.detector._train_model)
+        self.train_button.pack(padx=10, pady=5)
+
+        self.current_word_lbl = tk.Label(button_frame, text=self.detector.auto_word)
+        self.current_word_lbl.pack()
+
+        self.input_text = tk.Text(button_frame, height= 5, width= 20);
+        self.input_text.pack()
+
+        self.input_word_btn = tk.Button(button_frame, text="establecer etiqueta", command=self.update_current_train_label)
+        self.input_word_btn.pack(padx=10, pady=5)
+    def update_current_train_label(self):
+        self.detector.auto_word = self.input_text.get(1.0, 'end-1c')
+        self.detector.photo_counter = 0
+        self.current_word_lbl.config(text=self.detector.auto_word)
 
     def update_video_label(self, imgtk):
         self.video_label.imgtk = imgtk
