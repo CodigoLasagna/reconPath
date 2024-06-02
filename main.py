@@ -43,16 +43,16 @@ class HandGestureApp(tk.CTkFrame):
         button_frame.pack(side="right", padx=20)
 
         self.quit_button = tk.CTkButton(button_frame, text="Salir", command=self.master.destroy)
-        self.quit_button.pack(padx=10, pady=5)
+        self.quit_button.pack(pady=5)
 
         self.take_pic_button = tk.CTkButton(button_frame, text="Tomar foto", command=self.detector._save_snapshot)
-        self.take_pic_button.pack(padx=10, pady=5)
+        self.take_pic_button.pack(pady=5)
 
         self.take_pic_temp_button = tk.CTkButton(button_frame, text="Tomar foto (cronometrado)", command=self.detector._timed_capture)
-        self.take_pic_temp_button.pack(padx=10, pady=5)
+        self.take_pic_temp_button.pack(pady=5)
 
         self.train_button = tk.CTkButton(button_frame, text="Entrenar modelo", command=self.call_train_model)
-        self.train_button.pack(padx=10, pady=5)
+        self.train_button.pack(pady=5)
 
         self.current_word_lbl = tk.CTkLabel(button_frame, text=self.detector.auto_word)
         self.current_word_lbl.pack()
@@ -61,7 +61,7 @@ class HandGestureApp(tk.CTkFrame):
         self.input_text.pack()
 
         self.input_word_btn = tk.CTkButton(button_frame, text="Establecer etiqueta", command=self.update_current_train_label)
-        self.input_word_btn.pack(padx=10, pady=5)
+        self.input_word_btn.pack(pady=5)
 
         images_frame = tk.CTkFrame(self)
         images_frame.pack(side="top", pady=20)
