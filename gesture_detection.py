@@ -18,6 +18,7 @@ class HandGestureDetector:
         os.makedirs(self.dataset_path, exist_ok=True)
         self.csv_path = os.path.join(self.dataset_path, "labels.csv")
         self.photo_counter = 0
+        self.pics_to_take_n = 0
         self.auto_word = auto_word
         self.frame = None
         self.results = None
@@ -112,6 +113,53 @@ class HandGestureDetector:
             
             self.capturing_timer = False
             self._save_snapshot()
+
+        # Iniciar la cuenta regresiva en un hilo separado para no bloquear la interfaz de usuario
+        countdown_thread = threading.Thread(target=countdown)
+        countdown_thread.start()
+
+    def _timed_capture_maxim(self):
+        countdown_time = 5
+        self.capturing_timer = True
+
+        def countdown():
+            for i in range(countdown_time, 0, -1):
+                frame_with_text = self.frame.copy()  # Copiar el frame original
+                self.countdown_time_current = i
+                
+                img = Image.fromarray(frame_with_text)
+                imgtk = ImageTk.PhotoImage(image=img)
+                self.app.update_video_label(imgtk)  # Actualizar la etiqueta de video en la GUI
+                
+                time.sleep(1)  # Esperar 1 segundo entre actualizaciones
+            
+            self.capturing_timer = False
+            self._save_snapshot()
+            self._timed_capture_custom(1)
+
+        # Iniciar la cuenta regresiva en un hilo separado para no bloquear la interfaz de usuario
+        countdown_thread = threading.Thread(target=countdown)
+        countdown_thread.start()
+
+    def _timed_capture_custom(self, countdown_time):
+        self.capturing_timer = True
+
+        def countdown():
+            for i in range(countdown_time, 0, -1):
+                frame_with_text = self.frame.copy()  # Copiar el frame original
+                self.countdown_time_current = i
+                
+                img = Image.fromarray(frame_with_text)
+                imgtk = ImageTk.PhotoImage(image=img)
+                self.app.update_video_label(imgtk)  # Actualizar la etiqueta de video en la GUI
+                
+                time.sleep(0.1)  # Esperar 1 segundo entre actualizaciones
+            
+            self.capturing_timer = False
+            self._save_snapshot()
+            self.pics_to_take_n -= 1
+            if (self.pics_to_take_n >=1 ):
+                self._timed_capture_custom(1)
 
         # Iniciar la cuenta regresiva en un hilo separado para no bloquear la interfaz de usuario
         countdown_thread = threading.Thread(target=countdown)

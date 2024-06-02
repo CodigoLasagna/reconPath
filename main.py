@@ -54,6 +54,11 @@ class HandGestureApp(tk.CTkFrame):
         self.take_pic_temp_button = tk.CTkButton(button_frame, text="Tomar foto (cronometrado)", command=self.detector._timed_capture)
         self.take_pic_temp_button.pack(pady=5)
 
+        self.take_mult_cron_pics = tk.CTkButton(button_frame, text="Tomar fotos (cronometrado) N veces", command=self.take_max_pics_n)
+        self.take_mult_cron_pics.pack(pady=5)
+        self.input_text_n = tk.CTkTextbox(button_frame, height=5, width=90)
+        self.input_text_n.pack()
+
         self.train_button = tk.CTkButton(button_frame, text="Entrenar modelo", command=self.call_train_model)
         self.train_button.pack(pady=5)
 
@@ -82,6 +87,10 @@ class HandGestureApp(tk.CTkFrame):
     def call_train_model(self):
         self.detector._train_model()
         self.load_images()
+
+    def take_max_pics_n(self):
+        self.detector.pics_to_take_n = int(self.input_text_n.get(1.0, 'end-1c'))
+        self.detector._timed_capture_maxim()
 
     def load_images(self):
         conf_matrix_path = "figures/conf_mat.png"
