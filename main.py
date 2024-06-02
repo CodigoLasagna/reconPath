@@ -21,7 +21,7 @@ class HandGestureApp(tk.CTkFrame):
         self.create_widgets()
 
         # Start the camera thread
-        self.camera_thread = threading.Thread(target=self.start_camera_thread, daemon=True)
+        self.camera_thread = threading.Thread(target=self.camera_loop, daemon=True)
         self.camera_thread.start()
 
     def initialize_detector(self):
@@ -95,7 +95,6 @@ class HandGestureApp(tk.CTkFrame):
         img2 = img2.resize((800, 420))
         self.imgtk2 = ImageTk.PhotoImage(image=img2)
         self.image_label2.configure(image=self.imgtk2)
-        print(self.image_label1.winfo_reqwidth())
 
     def update_current_train_label(self):
         self.detector.auto_word = self.input_text.get(1.0, 'end-1c')
@@ -106,16 +105,17 @@ class HandGestureApp(tk.CTkFrame):
         self.video_label.imgtk = imgtk
         self.video_label.configure(image=imgtk)
 
-    def start_camera_thread(self):
+    def camera_loop(self):
         while True:
             ret, frame = self.cap.read()
             if ret:
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 self.detector.detect_gestures(frame_rgb)
+
                 img = Image.fromarray(frame_rgb)
                 imgtk = ImageTk.PhotoImage(image=img)
-                self.update_video_label(imgtk)
-            self.master.update()
+                
+                self.video_label.after(10, self.update_video_label, imgtk)
 
 def initialize_classifier(dataset_path, model_path_to_use, model_path_to_train):
     classifier = HandGestureClassifierKnn(dataset_path, model_path_to_use, model_path_to_train)
