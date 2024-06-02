@@ -21,7 +21,7 @@ class HandGestureDetector:
         if not os.path.exists(self.csv_path):
             with open(self.csv_path, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
-                writer.writerow(['photo_path', 'gesture_label', 'hand_type', 'keypoints', 'no_v'])
+                writer.writerow(['photo_path', 'gesture_label', 'keypoints_left', 'keypoints_right'])
 
     def detect_gestures(self):
         cap = cv2.VideoCapture(0)
@@ -35,30 +35,32 @@ class HandGestureDetector:
             results = self.hands.process(frame_rgb)
 
             if results.multi_hand_landmarks:
+                keypoints_combined = {}
                 for hand_landmarks, handedness in zip(results.multi_hand_landmarks, results.multi_handedness):
                     hand_type = handedness.classification[0].label  # 'Left' o 'Right'
                     keypoints = [(lm.x, lm.y, lm.z) for lm in hand_landmarks.landmark]
+                    keypoints_combined[hand_type] = keypoints
                     
                     # Dibujar landmarks utilizando Mediapipe
                     self.mp_drawing.draw_landmarks(frame, hand_landmarks, self.mp_hands.HAND_CONNECTIONS)
-                    
-                    # Clasificar gesto utilizando el modelo cargado
-                    if(self.classifier):
-                        features = self.classifier.extract_features({'keypoints': keypoints, 'hand_type': hand_type})
-                        prediction = self.classifier.knn_model.predict([features])
+                
+                # Clasificar gesto utilizando el modelo cargado
+                if self.classifier and self.classifier.knn_model:
+                    features = self.classifier.extract_combined_features(keypoints_combined)
+                    prediction = self.classifier.knn_model.predict([features])
             
-                        # Dibujar texto del gesto
-                        cv2.putText(frame, f'Gesto: {prediction}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (230, 0, 77), 2, cv2.LINE_AA)
+                    # Dibujar texto del gesto
+                    cv2.putText(frame, f'Gesto: {prediction}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (230, 0, 77), 2, cv2.LINE_AA)
 
             cv2.imshow('Hand Gesture Recognition', frame)
             key = cv2.waitKey(1)
-            if (key == ord('p')):
+            if key == ord('p'):
                 self._save_snapshot(frame, self.auto_word, results)
-            if (key == ord('c')):
+            if key == ord('c'):
                 self._timed_capture(cap)
-            if (key == ord('t')):
+            if key == ord('t') and self.classifier:
                 self._train_model()
-            if (key == ord('i')):
+            if key == ord('i'):
                 self._change_output_word()
             if key & 0xFF == 27 or key == ord('q'):
                 break
@@ -67,7 +69,7 @@ class HandGestureDetector:
         cv2.destroyAllWindows()
 
     def _save_snapshot(self, frame, gesture_label, results):
-        if (self.auto_word == ''):
+        if self.auto_word == '':
             gesture_label = input("Introduce la etiqueta para este gesto: ")
         else:
             gesture_label = self.auto_word
@@ -79,29 +81,34 @@ class HandGestureDetector:
         self.photo_counter += 1
 
     def _save_label(self, photo_path, gesture_label, results):
-        with open(self.csv_path, 'a', newline='') as csvfile:
-            writer = csv.writer(csvfile)
+        keypoints_combined = {'Left': [], 'Right': []}
+        
+        if results.multi_hand_landmarks:
             for hand_landmarks, handedness in zip(results.multi_hand_landmarks, results.multi_handedness):
                 hand_type = handedness.classification[0].label  # 'Left' o 'Right'
                 keypoints = [(lm.x, lm.y, lm.z) for lm in hand_landmarks.landmark]
-                visible_keypoints = [i for i, lm in enumerate(hand_landmarks.landmark) if lm.visibility > 0.5]
-                writer.writerow([photo_path, gesture_label, hand_type, keypoints, visible_keypoints])
+                keypoints_combined[hand_type] = keypoints
+            
+        with open(self.csv_path, 'a', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow([photo_path, gesture_label, keypoints_combined['Left'], keypoints_combined['Right']])
 
     def _train_model(self):
-        self.classifier.train()
-        self.classifier.evaluate()
-        self.classifier.save_model()
+        if self.classifier:
+            self.classifier.train()
+            self.classifier.evaluate()
+            self.classifier.save_model()
 
     def _change_output_word(self):
         self.auto_word = input("Introduzca el nombre para la etiqueta del gesto: ")
 
     def _timed_capture(self, cap):
-        if (self.auto_word == ''):
+        if self.auto_word == '':
             gesture_label = input("Introduce la etiqueta para este gesto: ")
         else:
             gesture_label = self.auto_word
         start_time = time.time()
-        end_time = start_time + 10
+        end_time = start_time + 5
 
         while time.time() < end_time:
             ret, frame = cap.read()
