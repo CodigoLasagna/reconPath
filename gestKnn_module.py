@@ -83,18 +83,21 @@ class HandGestureClassifierKnn:
         cm = confusion_matrix(self.y_test, y_pred)
         cr = classification_report(self.y_test, y_pred, output_dict=True)
         
-        # Mostrar reporte de clasificación
-        #print(classification_report(self.y_test, y_pred))
-    
         # Preparar datos para el gráfico de barras
-        metrics = cr.keys()
-        precision = [cr[label]['precision'] for label in metrics if label != 'accuracy']
-        recall = [cr[label]['recall'] for label in metrics if label != 'accuracy']
-        f1score = [cr[label]['f1-score'] for label in metrics if label != 'accuracy']
-        categories = [label for label in metrics if label != 'accuracy']
+        metrics = list(cr.keys())
+        precision = [cr[label]['precision'] for label in metrics if label not in ('accuracy', 'macro avg', 'weighted avg')]
+        recall = [cr[label]['recall'] for label in metrics if label not in ('accuracy', 'macro avg', 'weighted avg')]
+        f1score = [cr[label]['f1-score'] for label in metrics if label not in ('accuracy', 'macro avg', 'weighted avg')]
+        categories = [label for label in metrics if label not in ('accuracy', 'macro avg', 'weighted avg')]
+        
+        # Añadir las métricas generales al final
+        precision.extend([cr['accuracy'], cr['macro avg']['precision'], cr['weighted avg']['precision']])
+        recall.extend([cr['accuracy'], cr['macro avg']['recall'], cr['weighted avg']['recall']])
+        f1score.extend([cr['accuracy'], cr['macro avg']['f1-score'], cr['weighted avg']['f1-score']])
+        categories.extend(['Accuracy', 'Macro Avg', 'Weighted Avg'])
     
         # Configurar el gráfico de barras
-        plt.figure(figsize=(10, 5), facecolor='#293942')  # Ajuste el color de fondo de la figura
+        plt.figure(figsize=(14, 6), facecolor='#293942')  # Ajuste el color de fondo de la figura
         barWidth = 0.25
         ax = plt.axes()
         ax.set_facecolor('#1B232B')
@@ -105,18 +108,47 @@ class HandGestureClassifierKnn:
         # Usar los colores de la paleta YlGnBu para las barras
         palette = sns.color_palette('YlGnBu', len(categories))
         
-        plt.bar(r1, precision, color=palette[0], width=barWidth, label='Precision')
-        plt.bar(r2, recall, color=palette[1], width=barWidth, label='Recall')
-        plt.bar(r3, f1score, color=palette[2], width=barWidth, label='F1-score')
+        bars1 = plt.bar(r1, precision, color=palette[0], width=barWidth, label='Precision')
+        bars2 = plt.bar(r2, recall, color=palette[1], width=barWidth, label='Recall')
+        bars3 = plt.bar(r3, f1score, color=palette[2], width=barWidth, label='F1-score')
+    
+        # Añadir texto dentro de las barras
+        for bar in bars1:
+            yval = bar.get_height()
+            plt.text(bar.get_x() + bar.get_width()/2, yval - 0.05, round(yval, 2), ha='center', color='black', fontsize=10)
+        for bar in bars2:
+            yval = bar.get_height()
+            plt.text(bar.get_x() + bar.get_width()/2, yval - 0.05, round(yval, 2), ha='center', color='black', fontsize=10)
+        for bar in bars3:
+            yval = bar.get_height()
+            plt.text(bar.get_x() + bar.get_width()/2, yval - 0.05, round(yval, 2), ha='center', color='black', fontsize=10)
         
-        plt.xlabel('Metricas', fontweight='bold', color='white')
-        plt.ylabel('Score', color='white')  # Agregar etiqueta para el eje Y
+        plt.xlabel('Métricas', fontweight='bold', color='white')
+        plt.ylabel('Puntuación', color='white')  # Agregar etiqueta para el eje Y
         plt.xticks([r + barWidth for r in range(len(categories))], categories, color='white')
         plt.yticks(color='white')  # Ajustar color de los números en el eje Y
         plt.title('Reporte de clasificación', color='white')
         plt.legend()
         
         plt.savefig('figures/clas_rep.png')
+        # plt.show()
+    
+        # Mostrar matriz de confusión
+        plt.figure(figsize=(10, 7), facecolor='#293942')
+        heatmap = sns.heatmap(cm, annot=True, fmt='d', cmap='YlGnBu', xticklabels=np.unique(self.y_test), yticklabels=np.unique(self.y_test))
+        heatmap.set_yticklabels(heatmap.get_yticklabels(), color='white')
+        heatmap.set_xticklabels(heatmap.get_yticklabels(), color='white')
+    
+        cbar = heatmap.collections[0].colorbar
+        cbar.set_label('Colorbar Label', color='white')
+        cbar.ax.yaxis.set_tick_params(color='white')
+        cbar.ax.yaxis.set_ticklabels(cbar.ax.yaxis.get_ticklabels(), color='white')
+    
+        plt.xlabel('Predicho', color='white')
+        plt.ylabel('Verdadero', color='white')
+        plt.title('Matriz de confusión', color='white')
+        plt.savefig('figures/conf_mat.png')
+        # plt.show()
         #plt.show()
         
         # Mostrar matriz de confusión

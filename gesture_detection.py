@@ -7,7 +7,7 @@ import threading
 from PIL import ImageTk, Image
 
 class HandGestureDetector:
-    def __init__(self, max_num_hands=2, min_detection_confidence=0.7, auto_word='', classifier=None, cap=None, app=None):
+    def __init__(self, max_num_hands=2, min_detection_confidence=0.7, auto_word='', classifier=None, cap=None, app=None, dataset_path=''):
         self.mp_hands = mp.solutions.hands
         self.classifier = classifier
         self.cap = cap  # Guardar la instancia de captura de cámara
@@ -16,7 +16,7 @@ class HandGestureDetector:
         self.mp_drawing = mp.solutions.drawing_utils
         self.dataset_path = "hand_gesture_dataset"
         os.makedirs(self.dataset_path, exist_ok=True)
-        self.csv_path = os.path.join(self.dataset_path, "labels.csv")
+        self.csv_path = dataset_path
         self.photo_counter = 0
         self.pics_to_take_n = 0
         self.auto_word = auto_word
@@ -153,12 +153,12 @@ class HandGestureDetector:
                 imgtk = ImageTk.PhotoImage(image=img)
                 self.app.update_video_label(imgtk)  # Actualizar la etiqueta de video en la GUI
                 
-                time.sleep(0.1)  # Esperar 1 segundo entre actualizaciones
+                time.sleep(0.05)  # Esperar 1 segundo entre actualizaciones
             
             self.capturing_timer = False
             self._save_snapshot()
             self.pics_to_take_n -= 1
-            if (self.pics_to_take_n >=1 ):
+            if (self.pics_to_take_n >=2 ):
                 self._timed_capture_custom(1)
 
         # Iniciar la cuenta regresiva en un hilo separado para no bloquear la interfaz de usuario

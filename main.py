@@ -25,11 +25,11 @@ class HandGestureApp(tk.CTkFrame):
         self.camera_thread.start()
 
     def initialize_detector(self):
-        dataset_path = 'hand_gesture_dataset/labels.csv'
-        model_use_path = 'trained_models/model_01.pkl'
-        model_train_path = 'trained_models/model_01.pkl'
+        dataset_path = 'hand_gesture_dataset/labels_2.csv'
+        model_use_path = 'trained_models/model_02.pkl'
+        model_train_path = 'trained_models/model_02.pkl'
         self.classifier = initialize_classifier(dataset_path, model_use_path, model_train_path)
-        self.detector = HandGestureDetector(classifier=self.classifier, cap=self.cap, app=self)
+        self.detector = HandGestureDetector(classifier=self.classifier, cap=self.cap, app=self, dataset_path=dataset_path)
 
     def create_widgets(self):
         main_frame = tk.CTkFrame(self)
@@ -48,10 +48,10 @@ class HandGestureApp(tk.CTkFrame):
         self.quit_button = tk.CTkButton(button_frame, text="Salir", command=self.master.destroy)
         self.quit_button.pack(pady=5)
 
-        self.take_pic_button = tk.CTkButton(button_frame, text="Tomar foto", command=self.detector._save_snapshot)
+        self.take_pic_button = tk.CTkButton(button_frame, text="Tomar foto", command=self.take_pic)
         self.take_pic_button.pack(pady=5)
 
-        self.take_pic_temp_button = tk.CTkButton(button_frame, text="Tomar foto (cronometrado)", command=self.detector._timed_capture)
+        self.take_pic_temp_button = tk.CTkButton(button_frame, text="Tomar foto (cronometrado)", command=self.take_timed_pic)
         self.take_pic_temp_button.pack(pady=5)
 
         self.take_mult_cron_pics = tk.CTkButton(button_frame, text="Tomar fotos (cronometrado) N veces", command=self.take_max_pics_n)
@@ -64,12 +64,10 @@ class HandGestureApp(tk.CTkFrame):
 
         self.current_word_lbl = tk.CTkLabel(button_frame, text=self.detector.auto_word)
         self.current_word_lbl.pack()
+        self.current_word_lbl.configure(text='Etiqueta')
 
         self.input_text = tk.CTkTextbox(button_frame, height=5, width=90)
         self.input_text.pack()
-
-        self.input_word_btn = tk.CTkButton(button_frame, text="Establecer etiqueta", command=self.update_current_train_label)
-        self.input_word_btn.pack(pady=5)
 
         images_frame = tk.CTkFrame(main_frame)
         images_frame.pack(side="top", pady=5, padx=20)
@@ -88,7 +86,17 @@ class HandGestureApp(tk.CTkFrame):
         self.detector._train_model()
         self.load_images()
 
+    def take_pic(self):
+        self.detector.auto_word = self.input_text.get(1.0, 'end-1c')
+        self.detector._save_snapshot()
+
+    def take_timed_pic(self):
+        self.detector.auto_word = self.input_text.get(1.0, 'end-1c')
+        self.detector._timed_capture()
+
+
     def take_max_pics_n(self):
+        self.detector.auto_word = self.input_text.get(1.0, 'end-1c')
         self.detector.pics_to_take_n = int(self.input_text_n.get(1.0, 'end-1c'))
         self.detector._timed_capture_maxim()
 
