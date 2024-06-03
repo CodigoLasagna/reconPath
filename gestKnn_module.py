@@ -4,6 +4,8 @@ from ast import literal_eval
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.model_selection import cross_val_score, StratifiedKFold
+from sklearn.metrics import accuracy_score
 import joblib
 import os
 import seaborn as sns
@@ -78,7 +80,14 @@ class HandGestureClassifierKnn:
         if self.knn_model is None:
             print("No hay modelo entrenado para evaluar.")
             return
-    
+
+        # Validación cruzada
+        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=18)
+        cross_val_scores = cross_val_score(self.knn_model, self.X_train, self.y_train, cv=skf, scoring='accuracy')
+
+        print(f"Validación cruzada (5-fold): {cross_val_scores}")
+        print(f"Promedio de validación cruzada: {np.mean(cross_val_scores)}")
+
         y_pred = self.knn_model.predict(self.X_test)
         cm = confusion_matrix(self.y_test, y_pred)
         cr = classification_report(self.y_test, y_pred, output_dict=True)
@@ -97,7 +106,7 @@ class HandGestureClassifierKnn:
         categories.extend(['Accuracy', 'Macro Avg', 'Weighted Avg'])
     
         # Configurar el gráfico de barras
-        plt.figure(figsize=(14, 6), facecolor='#293942')  # Ajuste el color de fondo de la figura
+        plt.figure(figsize=(14, 6), facecolor='#293942')
         barWidth = 0.25
         ax = plt.axes()
         ax.set_facecolor('#1B232B')
@@ -105,14 +114,12 @@ class HandGestureClassifierKnn:
         r2 = [x + barWidth for x in r1]
         r3 = [x + barWidth for x in r2]
         
-        # Usar los colores de la paleta YlGnBu para las barras
         palette = sns.color_palette('YlGnBu', len(categories))
         
         bars1 = plt.bar(r1, precision, color=palette[0], width=barWidth, label='Precision')
         bars2 = plt.bar(r2, recall, color=palette[1], width=barWidth, label='Recall')
         bars3 = plt.bar(r3, f1score, color=palette[2], width=barWidth, label='F1-score')
     
-        # Añadir texto dentro de las barras
         for bar in bars1:
             yval = bar.get_height()
             plt.text(bar.get_x() + bar.get_width()/2, yval - 0.05, round(yval, 2), ha='center', color='black', fontsize=10)
@@ -124,49 +131,28 @@ class HandGestureClassifierKnn:
             plt.text(bar.get_x() + bar.get_width()/2, yval - 0.05, round(yval, 2), ha='center', color='black', fontsize=10)
         
         plt.xlabel('Métricas', fontweight='bold', color='white')
-        plt.ylabel('Puntuación', color='white')  # Agregar etiqueta para el eje Y
+        plt.ylabel('Puntuación', color='white')
         plt.xticks([r + barWidth for r in range(len(categories))], categories, color='white')
-        plt.yticks(color='white')  # Ajustar color de los números en el eje Y
+        plt.yticks(color='white')
         plt.title('Reporte de clasificación', color='white')
         plt.legend()
         
         plt.savefig('figures/clas_rep.png')
-        # plt.show()
     
-        # Mostrar matriz de confusión
-        plt.figure(figsize=(10, 7), facecolor='#293942')
-        heatmap = sns.heatmap(cm, annot=True, fmt='d', cmap='YlGnBu', xticklabels=np.unique(self.y_test), yticklabels=np.unique(self.y_test))
-        heatmap.set_yticklabels(heatmap.get_yticklabels(), color='white')
-        heatmap.set_xticklabels(heatmap.get_yticklabels(), color='white')
-    
-        cbar = heatmap.collections[0].colorbar
-        cbar.set_label('Colorbar Label', color='white')
-        cbar.ax.yaxis.set_tick_params(color='white')
-        cbar.ax.yaxis.set_ticklabels(cbar.ax.yaxis.get_ticklabels(), color='white')
-    
-        plt.xlabel('Predicho', color='white')
-        plt.ylabel('Verdadero', color='white')
-        plt.title('Matriz de confusión', color='white')
-        plt.savefig('figures/conf_mat.png')
-        # plt.show()
-        #plt.show()
-        
-        # Mostrar matriz de confusión
         plt.figure(figsize=(10, 7), facecolor='#293942')
         heatmap = sns.heatmap(cm, annot=True, fmt='d', cmap='YlGnBu', xticklabels=np.unique(self.y_test), yticklabels=np.unique(self.y_test))
         heatmap.set_yticklabels(heatmap.get_yticklabels(), color='white')
         heatmap.set_xticklabels(heatmap.get_xticklabels(), color='white')
-
+    
         cbar = heatmap.collections[0].colorbar
         cbar.set_label('Colorbar Label', color='white')
         cbar.ax.yaxis.set_tick_params(color='white')
         cbar.ax.yaxis.set_ticklabels(cbar.ax.yaxis.get_ticklabels(), color='white')
-
+    
         plt.xlabel('Predicho', color='white')
         plt.ylabel('Verdadero', color='white')
         plt.title('Matriz de confusión', color='white')
         plt.savefig('figures/conf_mat.png')
-        #plt.show()
 
 
     def save_model(self):
