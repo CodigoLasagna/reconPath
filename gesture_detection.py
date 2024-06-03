@@ -10,8 +10,8 @@ class HandGestureDetector:
     def __init__(self, max_num_hands=2, min_detection_confidence=0.7, auto_word='', classifier=None, cap=None, app=None, dataset_path=''):
         self.mp_hands = mp.solutions.hands
         self.classifier = classifier
-        self.cap = cap  # Guardar la instancia de captura de cámara
-        self.app = app  # Referencia a la instancia de la app tkinter
+        self.cap = cap
+        self.app = app
         self.hands = self.mp_hands.Hands(max_num_hands=max_num_hands, min_detection_confidence=min_detection_confidence)
         self.mp_drawing = mp.solutions.drawing_utils
         self.dataset_path = "hand_gesture_dataset"
@@ -102,14 +102,17 @@ class HandGestureDetector:
 
         def countdown():
             for i in range(countdown_time, 0, -1):
-                frame_with_text = self.frame.copy()  # Copiar el frame original
+                # Copiar el frame original
+                frame_with_text = self.frame.copy()
                 self.countdown_time_current = i
                 
                 img = Image.fromarray(frame_with_text)
                 imgtk = ImageTk.PhotoImage(image=img)
-                self.app.update_video_label(imgtk)  # Actualizar la etiqueta de video en la GUI
+                # Actualizar la etiqueta de video en la GUI
+                self.app.update_video_label(imgtk)
                 
-                time.sleep(1)  # Esperar 1 segundo entre actualizaciones
+                # Esperar 1 segundo entre actualizaciones
+                time.sleep(1)
             
             self.capturing_timer = False
             self._save_snapshot()
@@ -124,14 +127,17 @@ class HandGestureDetector:
 
         def countdown():
             for i in range(countdown_time, 0, -1):
-                frame_with_text = self.frame.copy()  # Copiar el frame original
+                # Copiar el frame original
+                frame_with_text = self.frame.copy()
                 self.countdown_time_current = i
                 
                 img = Image.fromarray(frame_with_text)
                 imgtk = ImageTk.PhotoImage(image=img)
-                self.app.update_video_label(imgtk)  # Actualizar la etiqueta de video en la GUI
+                # Actualizar la etiqueta de video en la GUI
+                self.app.update_video_label(imgtk)
                 
-                time.sleep(1)  # Esperar 1 segundo entre actualizaciones
+                # Esperar 1 segundo entre actualizaciones
+                time.sleep(1)
             
             self.capturing_timer = False
             self._save_snapshot()
@@ -146,14 +152,14 @@ class HandGestureDetector:
 
         def countdown():
             for i in range(countdown_time, 0, -1):
-                frame_with_text = self.frame.copy()  # Copiar el frame original
+                frame_with_text = self.frame.copy()
                 self.countdown_time_current = i
                 
                 img = Image.fromarray(frame_with_text)
                 imgtk = ImageTk.PhotoImage(image=img)
-                self.app.update_video_label(imgtk)  # Actualizar la etiqueta de video en la GUI
+                self.app.update_video_label(imgtk)
                 
-                time.sleep(0.05)  # Esperar 1 segundo entre actualizaciones
+                time.sleep(0.05)
             
             self.capturing_timer = False
             self._save_snapshot()

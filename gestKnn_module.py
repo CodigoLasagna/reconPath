@@ -48,7 +48,8 @@ class HandGestureClassifierKnn:
             mean_y_left = np.mean(y_coords_left) if y_coords_left else 0
             features.extend([mean_x_left, mean_y_left])
         else:
-            features.extend([0, 0])  # Si no hay datos de la mano izquierda, se añaden valores por defecto
+            features.extend([0, 0])
+            # Si no hay datos de la mano izquierda, se añaden valores por defecto
     
         if 'Right' in keypoints_combined:
             keypoints_right = keypoints_combined['Right']
@@ -58,7 +59,8 @@ class HandGestureClassifierKnn:
             mean_y_right = np.mean(y_coords_right) if y_coords_right else 0
             features.extend([mean_x_right, mean_y_right])
         else:
-            features.extend([0, 0])  # Si no hay datos de la mano derecha, se añaden valores por defecto
+            features.extend([0, 0])
+            # Si no hay datos de la mano derecha, se añaden valores por defecto
     
         return features
 
