@@ -2,8 +2,10 @@ import customtkinter as tk
 from PIL import Image, ImageTk
 import cv2
 import threading
-from gesture_detection import HandGestureDetector
-from gestKnn_module import HandGestureClassifierKnn
+#from gesture_detection import HandGestureDetector
+#from gestKnn_module import HandGestureClassifierKnn
+from modules.gesture_detection import HandGestureDetector
+from modules.gestKnn_module import HandGestureClassifierKnn
 import warnings
 import os
 
@@ -69,6 +71,9 @@ class HandGestureApp(tk.CTkFrame):
         self.input_text = tk.CTkTextbox(button_frame, height=5, width=90)
         self.input_text.pack()
 
+        self.hide_cam_btn = tk.CTkButton(button_frame, text="Esconder webcam", command=self.hide_cam_toggle)
+        self.hide_cam_btn.pack(pady=5)
+
         images_frame = tk.CTkFrame(main_frame)
         images_frame.pack(side="top", pady=5, padx=20)
 
@@ -81,6 +86,8 @@ class HandGestureApp(tk.CTkFrame):
         self.image_label2.configure(text='')
 
         self.load_images()
+    def hide_cam_toggle(self):
+        self.detector.show_webcam = not (self.detector.show_webcam)
 
     def call_train_model(self):
         self.detector._train_model()

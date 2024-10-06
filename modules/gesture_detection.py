@@ -7,7 +7,7 @@ import threading
 from PIL import ImageTk, Image
 
 class HandGestureDetector:
-    def __init__(self, max_num_hands=2, min_detection_confidence=0.7, auto_word='', classifier=None, cap=None, app=None, dataset_path=''):
+    def __init__(self, max_num_hands=2, min_detection_confidence=0.7, auto_word='', classifier=None, cap=None, app=None, dataset_path='', show_webcam=False):
         self.mp_hands = mp.solutions.hands
         self.classifier = classifier
         self.cap = cap
@@ -24,6 +24,7 @@ class HandGestureDetector:
         self.results = None
         self.capturing_timer = False
         self.countdown_time_current = 0
+        self.show_webcam = show_webcam
         self._initialize_csv()
 
     def _initialize_csv(self):
@@ -35,6 +36,10 @@ class HandGestureDetector:
     def detect_gestures(self, frame_rgb):
         self.frame = frame_rgb
         self.results = self.hands.process(self.frame)
+        if (self.show_webcam == False):
+            height, width, _ = self.frame.shape
+            cv2.rectangle(self.frame, (0, 0), (width, height), (0, 0), -1)
+
 
         if self.results.multi_hand_landmarks:
             keypoints_combined = {}
