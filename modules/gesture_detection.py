@@ -32,13 +32,16 @@ class HandGestureDetector:
             with open(self.csv_path, 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(['photo_path', 'gesture_label', 'keypoints_left', 'keypoints_right'])
+    def _cover_webcam(self):
+        if (self.show_webcam == False):
+            height, width, _ = self.frame.shape
+            cv2.rectangle(self.frame, (0, 0), (width, height), (0, 0), -1)
+
 
     def detect_gestures(self, frame_rgb):
         self.frame = frame_rgb
         self.results = self.hands.process(self.frame)
-        if (self.show_webcam == False):
-            height, width, _ = self.frame.shape
-            cv2.rectangle(self.frame, (0, 0), (width, height), (0, 0), -1)
+        self._cover_webcam()
 
 
         if self.results.multi_hand_landmarks:
@@ -108,13 +111,13 @@ class HandGestureDetector:
         def countdown():
             for i in range(countdown_time, 0, -1):
                 # Copiar el frame original
-                frame_with_text = self.frame.copy()
+                #frame_with_text = self.frame.copy()
                 self.countdown_time_current = i
                 
-                img = Image.fromarray(frame_with_text)
-                imgtk = ImageTk.PhotoImage(image=img)
+                #img = Image.fromarray(frame_with_text)
+                #imgtk = ImageTk.PhotoImage(image=img)
                 # Actualizar la etiqueta de video en la GUI
-                self.app.update_video_label(imgtk)
+                #self.app.update_video_label(imgtk)
                 
                 # Esperar 1 segundo entre actualizaciones
                 time.sleep(1)
@@ -133,13 +136,13 @@ class HandGestureDetector:
         def countdown():
             for i in range(countdown_time, 0, -1):
                 # Copiar el frame original
-                frame_with_text = self.frame.copy()
+                #frame_with_text = self.frame.copy()
                 self.countdown_time_current = i
                 
-                img = Image.fromarray(frame_with_text)
-                imgtk = ImageTk.PhotoImage(image=img)
+                #img = Image.fromarray(frame_with_text)
+                #imgtk = ImageTk.PhotoImage(image=img)
                 # Actualizar la etiqueta de video en la GUI
-                self.app.update_video_label(imgtk)
+                #self.app.update_video_label(imgtk)
                 
                 # Esperar 1 segundo entre actualizaciones
                 time.sleep(1)
@@ -157,12 +160,12 @@ class HandGestureDetector:
 
         def countdown():
             for i in range(countdown_time, 0, -1):
-                frame_with_text = self.frame.copy()
+                #frame_with_text = self.frame.copy()
                 self.countdown_time_current = i
                 
-                img = Image.fromarray(frame_with_text)
-                imgtk = ImageTk.PhotoImage(image=img)
-                self.app.update_video_label(imgtk)
+                #img = Image.fromarray(frame_with_text)
+                #imgtk = ImageTk.PhotoImage(image=img)
+                #self.app.update_video_label(imgtk)
                 
                 time.sleep(0.05)
             

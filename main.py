@@ -2,8 +2,6 @@ import customtkinter as tk
 from PIL import Image, ImageTk
 import cv2
 import threading
-#from gesture_detection import HandGestureDetector
-#from gestKnn_module import HandGestureClassifierKnn
 from modules.gesture_detection import HandGestureDetector
 from modules.gestKnn_module import HandGestureClassifierKnn
 import warnings
@@ -141,7 +139,6 @@ class HandGestureApp(tk.CTkFrame):
 
                 img = Image.fromarray(frame_rgb)
                 imgtk = ImageTk.PhotoImage(image=img)
-                
                 self.video_label.after(10, self.update_video_label, imgtk)
 
 def initialize_classifier(dataset_path, model_path_to_use, model_path_to_train):

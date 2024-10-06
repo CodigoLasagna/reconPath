@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import cross_val_score, StratifiedKFold
-from sklearn.metrics import accuracy_score
+#from sklearn.metrics import accuracy_score
 import joblib
 import os
 import seaborn as sns
