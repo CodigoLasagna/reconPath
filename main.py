@@ -6,6 +6,8 @@ from modules.gesture_detection import HandGestureDetector
 from modules.gestKnn_module import HandGestureClassifierKnn
 import warnings
 import os
+import json
+import pandas as pd
 
 warnings.filterwarnings("ignore", category=UserWarning)
 tk.set_appearance_mode("dark")
@@ -16,34 +18,58 @@ class HandGestureApp(tk.CTkFrame):
         self.master = master
         self.pack()
         self.cap = cap
+        self.current_model = "default"
+        self.cache_file_name = "default"
 
         self.initialize_detector()
         self.create_widgets()
 
-        # Start the camera thread
         self.camera_thread = threading.Thread(target=self.camera_loop, daemon=True)
         self.camera_thread.start()
+        self.check_for_cache()
+        self.get_gestures_from_csv()
+    
+    def save_cache(self):
+        cache_file = 'cache/' + self.cache_file_name + '.json'
+        data = {
+            "file_names": {
+                "current_model": self.current_model,
+            }
+        }
+        with open(cache_file, 'w') as json_file:
+            json.dump(data, json_file)
+    
+    def check_for_cache(self):
+        cache_file = 'cache/' + self.cache_file_name + '.json'
+        loaded_data = None
+        if not (os.path.exists(cache_file)):
+            print("no cache file")
+            return
+        print("existing file found")
+        with open(cache_file, 'r') as json_file:
+            loaded_data = json.load(json_file)
+        self.current_model = loaded_data['file_names'].get('current_model')
 
     def initialize_detector(self):
-        dataset_path = 'hand_gesture_dataset/labels_2.csv'
-        model_use_path = 'trained_models/model_02.pkl'
-        model_train_path = 'trained_models/model_02.pkl'
+        dataset_path = 'datasets/' + self.current_model + '.csv'
+        model_use_path = 'trained_models/' + self.current_model + '.pkl'
+        model_train_path = 'trained_models/' + self.current_model + '.pkl'
         self.classifier = initialize_classifier(dataset_path, model_use_path, model_train_path)
         self.detector = HandGestureDetector(classifier=self.classifier, cap=self.cap, app=self, dataset_path=dataset_path)
 
     def create_widgets(self):
-        main_frame = tk.CTkFrame(self)
-        main_frame.pack(expand=True, pady=10, padx=10)
+        self.main_frame = tk.CTkFrame(self)
+        self.main_frame.pack(expand=True, pady=10, padx=10)
 
-        up_frame = tk.CTkFrame(main_frame)
-        up_frame.pack(side="top", pady=5)
+        self.up_frame = tk.CTkFrame(self.main_frame)
+        self.up_frame.pack(side="top", pady=5)
         
-        self.video_label = tk.CTkLabel(up_frame)
+        self.video_label = tk.CTkLabel(self.up_frame)
         self.video_label.pack(side="left", pady=5, padx=5)
         self.video_label.configure(text='')
 
-        button_frame = tk.CTkFrame(up_frame)
-        button_frame.pack(side="right", padx=10)
+        button_frame = tk.CTkFrame(self.up_frame)
+        button_frame.pack(side="left", padx=10)
 
         self.quit_button = tk.CTkButton(button_frame, text="Salir", command=self.master.destroy)
         self.quit_button.pack(pady=5)
@@ -72,7 +98,7 @@ class HandGestureApp(tk.CTkFrame):
         self.hide_cam_btn = tk.CTkButton(button_frame, text="Esconder webcam", command=self.hide_cam_toggle)
         self.hide_cam_btn.pack(pady=5)
 
-        images_frame = tk.CTkFrame(main_frame)
+        images_frame = tk.CTkFrame(self.main_frame)
         images_frame.pack(side="top", pady=5, padx=20)
 
         self.image_label1 = tk.CTkLabel(images_frame)
@@ -83,13 +109,121 @@ class HandGestureApp(tk.CTkFrame):
         self.image_label2.pack(side="right", padx=10, pady=10)
         self.image_label2.configure(text='')
 
+        #table_inputs_frame = tk.CTkFrame(up_frame)
+        #table_inputs_frame.pack(side="right", padx=10)
+
         self.load_images()
+        self.prepare_table()
+
+    def prepare_table(self):
+        #prepare main frame
+        self.table_inputs_frame = tk.CTkFrame(self.up_frame)
+        self.table_inputs_frame.pack(side="right", padx=10)
+        #prepare top frame
+        self.table_top_frame = tk.CTkFrame(self.table_inputs_frame)
+        self.table_top_frame.pack(side="top", padx=5)
+
+
+        #create canvas
+        self.canvas = tk.CTkCanvas(self.table_top_frame, height=150, width=175, bg = "black")
+        self.scrollbar = tk.CTkScrollbar(self.table_top_frame, command=self.canvas.yview)
+        self.scrollable_frame = tk.CTkFrame(self.canvas)
+        #setup scrollframe
+        self.scrollable_frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+        self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+        #pack canvas
+        self.canvas.pack(side="left", expand=True, fill="both")
+        self.scrollbar.pack(side="right")
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        self.gesture_inputs_list = []
+
+        self.entries = []
+        self.update_table()
+        show_button = tk.CTkButton(self.table_inputs_frame, text = "Mostrar valores", command = self.show_values)
+        show_button.pack(side="left", padx = 5, pady = 5)
+        save_button = tk.CTkButton(self.table_inputs_frame, text = "Guardar valores", command = self.save_inputs_cache_table_safe)
+        save_button.pack(side="right", padx = 5, pady = 5)
+
+    def update_table(self):
+        self.entries = []
+        for i in range(len(self.gesture_inputs_list)):
+            row = []
+            #default column (for model gestures)
+            label = tk.CTkLabel(self.scrollable_frame, text=self.gesture_inputs_list[i])
+            label.grid(row = i, column=0, padx=5, pady=5)
+            #input column (for input events)
+            entry = tk.CTkEntry(self.scrollable_frame)
+            entry.grid(row = i, column = 1, padx = 5, pady = 5)
+            row.append(entry)
+
+            self.entries.append(row)
+
+
+    def show_values(self):
+        for i, row in enumerate(self.entries):
+            print(f"{self.gesture_inputs_list[i]}: {row[0].get()}")
+            #row[0].delete(0, tk.END)
+            #row[0].insert(0, "hi")
+
+
     def hide_cam_toggle(self):
         self.detector.show_webcam = not (self.detector.show_webcam)
 
     def call_train_model(self):
         self.detector._train_model()
         self.load_images()
+        self.get_gestures_from_csv()
+
+    def get_gestures_from_csv(self):
+        csv_file = 'datasets/' + self.current_model + '.csv'
+        cache_file_gestures = 'cache/' + self.current_model + "_gestures_list.json"
+        if not (os.path.exists(csv_file)):
+            return
+        df = pd.read_csv(csv_file)
+        column = df['gesture_label']
+        unique_values = column.unique()
+        self.prev_values = []
+        first_oppening = False
+        self.gesture_inputs_list = unique_values[:]
+        if (len(self.entries) == 0):
+            first_oppening = True
+
+        if (first_oppening):
+            if (os.path.exists(cache_file_gestures)):
+                with open(cache_file_gestures, 'r') as file:
+                    self.prev_values = json.load(file)
+        else:
+            for i, row in enumerate(self.entries):
+                self.prev_values.append(row[0].get())
+
+        self.update_table()
+
+        if (first_oppening):
+            if (len(self.prev_values) > 0):
+                self.save_inputs_cache()
+        else:
+            self.save_inputs_cache()
+    
+    def save_inputs_cache(self):
+        cache_file_gestures = 'cache/' + self.current_model + "_gestures_list.json"
+        with open(cache_file_gestures, 'w') as file:
+            json.dump(self.prev_values, file)
+        for i, row in enumerate(self.entries):
+            row[0].delete(0, tk.END)
+            if (i < len(self.prev_values)):
+                row[0].insert(0, self.prev_values[i])
+            else:
+                row[0].insert(0, '')
+
+    def save_inputs_cache_table_safe(self):
+        self.prev_values = []
+        for i, row in enumerate(self.entries):
+            self.prev_values.append(row[0].get())
+        self.save_inputs_cache()
+
+
 
     def take_pic(self):
         self.detector.auto_word = self.input_text.get(1.0, 'end-1c')
@@ -98,7 +232,6 @@ class HandGestureApp(tk.CTkFrame):
     def take_timed_pic(self):
         self.detector.auto_word = self.input_text.get(1.0, 'end-1c')
         self.detector._timed_capture()
-
 
     def take_max_pics_n(self):
         self.detector.auto_word = self.input_text.get(1.0, 'end-1c')
@@ -155,3 +288,4 @@ if __name__ == "__main__":
     app.pack(expand=True, fill="both")
 
     root.mainloop()
+    app.save_cache()

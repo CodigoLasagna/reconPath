@@ -14,7 +14,7 @@ class HandGestureDetector:
         self.app = app
         self.hands = self.mp_hands.Hands(max_num_hands=max_num_hands, min_detection_confidence=min_detection_confidence)
         self.mp_drawing = mp.solutions.drawing_utils
-        self.dataset_path = "hand_gesture_dataset"
+        self.dataset_path = "datasets"
         os.makedirs(self.dataset_path, exist_ok=True)
         self.csv_path = dataset_path
         self.photo_counter = 0
@@ -74,8 +74,8 @@ class HandGestureDetector:
             gesture_label = self.auto_word
             
         photo_path = os.path.join(self.dataset_path, f"{gesture_label}_{self.photo_counter}.png")
-        frame_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-        cv2.imwrite(photo_path, frame_rgb)
+        #frame_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+        #cv2.imwrite(photo_path, frame_rgb)
         print(f"Foto guardada: {photo_path}")
         self._save_label(photo_path, gesture_label, self.results)
         self.photo_counter += 1
