@@ -286,9 +286,11 @@ class HandGestureApp(tk.CTkFrame):
     def call_input_executor(self):
         if (self.current_output != ""):
             value = self.prev_values[self.find_value_in_array()]
-            print(value)
+            #print(value)
             self.input_executer.execute_input(value)
             self.current_output = ""
+        else:
+            self.input_executer.stop_event()
 
     def find_value_in_array(self):
         for i in range(len(self.gesture_inputs_list)):
