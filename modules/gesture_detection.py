@@ -58,6 +58,7 @@ class HandGestureDetector:
                 prediction = self.classifier.knn_model.predict([features])
         
                 cv2.putText(self.frame, f'Gesto: {prediction}', (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (230, 0, 77), 2, cv2.LINE_AA)
+                self.app.current_output = prediction
 
         if (self.capturing_timer == True):
             cv2.putText(self.frame, f"Capturando en {self.countdown_time_current}...", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (230, 0, 77), 2, cv2.LINE_AA)

@@ -4,6 +4,7 @@ import cv2
 import threading
 from modules.gesture_detection import HandGestureDetector
 from modules.gestKnn_module import HandGestureClassifierKnn
+from modules.input_executer_module import InputExecuter
 import warnings
 import os
 import json
@@ -20,6 +21,7 @@ class HandGestureApp(tk.CTkFrame):
         self.cap = cap
         self.current_model = "default"
         self.cache_file_name = "default"
+        self.allow_execute_output = tk.StringVar(value="off")
 
         self.initialize_detector()
         self.create_widgets()
@@ -28,6 +30,8 @@ class HandGestureApp(tk.CTkFrame):
         self.camera_thread.start()
         self.check_for_cache()
         self.get_gestures_from_csv()
+        self.current_output = ""
+        self.input_executer = InputExecuter()
     
     def save_cache(self):
         cache_file = 'cache/' + self.cache_file_name + '.json'
@@ -109,11 +113,15 @@ class HandGestureApp(tk.CTkFrame):
         self.image_label2.pack(side="right", padx=10, pady=10)
         self.image_label2.configure(text='')
 
+
         #table_inputs_frame = tk.CTkFrame(up_frame)
         #table_inputs_frame.pack(side="right", padx=10)
 
         self.load_images()
         self.prepare_table()
+
+        self.exe_out_btn = tk.CTkSwitch(button_frame, text="Ejecutar output", onvalue="on",offvalue="off", variable=self.allow_execute_output)
+        self.exe_out_btn.pack(pady=5)
 
     def prepare_table(self):
         #prepare main frame
@@ -273,6 +281,19 @@ class HandGestureApp(tk.CTkFrame):
                 img = Image.fromarray(frame_rgb)
                 imgtk = ImageTk.PhotoImage(image=img)
                 self.video_label.after(10, self.update_video_label, imgtk)
+            if (self.allow_execute_output.get() == "on"):
+                self.call_input_executor()
+    def call_input_executor(self):
+        if (self.current_output != ""):
+            value = self.prev_values[self.find_value_in_array()]
+            print(value)
+            self.input_executer.execute_input(value)
+            self.current_output = ""
+
+    def find_value_in_array(self):
+        for i in range(len(self.gesture_inputs_list)):
+            if self.gesture_inputs_list[i] == self.current_output:
+                return i
 
 def initialize_classifier(dataset_path, model_path_to_use, model_path_to_train):
     classifier = HandGestureClassifierKnn(dataset_path, model_path_to_use, model_path_to_train)
