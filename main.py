@@ -19,8 +19,8 @@ class HandGestureApp(tk.CTkFrame):
         self.master = master
         self.pack()
         self.cap = cap
-        self.current_model = "default"
-        self.cache_file_name = "default"
+        self.current_model = "minecraft"
+        self.cache_file_name = "minecraft"
         self.allow_execute_output = tk.StringVar(value="off")
 
         self.initialize_detector()
@@ -191,6 +191,8 @@ class HandGestureApp(tk.CTkFrame):
             return
         df = pd.read_csv(csv_file)
         column = df['gesture_label']
+        count_series = df['gesture_label'].value_counts()
+        print(count_series)
         unique_values = column.unique()
         self.prev_values = []
         first_oppening = False

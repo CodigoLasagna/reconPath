@@ -75,7 +75,7 @@ class HandGestureDetector:
             gesture_label = self.auto_word
             
         photo_path = os.path.join(self.dataset_path, f"{gesture_label}_{self.photo_counter}.png")
-        #frame_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+        frame_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
         #cv2.imwrite(photo_path, frame_rgb)
         print(f"Foto guardada: {photo_path}")
         self._save_label(photo_path, gesture_label, self.results)
